@@ -11,3 +11,7 @@ GET        /this-service-has-been-reset                 controllers.SessionExpir
 GET        /check-your-answers                          controllers.CheckYourAnswersController.onPageLoad
 
 GET        /unauthorised                                controllers.UnauthorisedController.onPageLoad
+
+GET        /value                                       controllers.ApplicationController.value
+
+GET        /result                                      @controllers.ApplicationController.result
