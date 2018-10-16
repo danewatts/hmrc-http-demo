@@ -19,7 +19,7 @@ package controllers
 import connectors.ApplicationConnector
 import javax.inject.Inject
 import play.api.libs.json.Json
-import play.api.mvc.Action
+import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 class ApplicationController @Inject()(connector: ApplicationConnector) extends FrontendController {
@@ -31,7 +31,7 @@ class ApplicationController @Inject()(connector: ApplicationConnector) extends F
       //Ok(Json.toJson("""{"response": true}"""))
   }
 
-  def result = Action.async {
+  def result: Action[AnyContent] = Action.async {
     implicit request ⇒
       connector.getResponse.map(x ⇒ Ok(Json.toJson(x.body))) recover {
         case e: Throwable ⇒ InternalServerError(e.toString)

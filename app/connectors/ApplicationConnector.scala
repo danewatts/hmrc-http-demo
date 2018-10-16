@@ -16,29 +16,20 @@
 
 package connectors
 
-import com.google.inject.ImplementedBy
 import config.WSHttp
-import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
 import play.api.http.Status._
-import uk.gov.hmrc.http.{CoreGet, HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-@ImplementedBy(classOf[ApplicationConnectorImpl])
-trait ApplicationConnector {
-  def http: CoreGet
-  val serviceUrl: String
-  implicit val headerCarrier: HeaderCarrier = HeaderCarrier()
+@Singleton
+class ApplicationConnector @Inject()(http: WSHttp) {
+  private val serviceUrl = "http://localhost:9000/example-frontend/value"
+  protected[connectors] val defaultNotFoundResponse: HttpResponse = HttpResponse(200, None, Map(), Some("""{"response": false"""))
 
-  def getResponse: Future[HttpResponse]
-}
-
-class ApplicationConnectorImpl @Inject()(val http: WSHttp) extends ApplicationConnector {
-  val serviceUrl = "http://localhost:9000/example-frontend/value"
-  val defaultNotFoundResponse: HttpResponse = HttpResponse(200, None, Map(), Some("""{"response": false"""))
-
-  def getResponse: Future[HttpResponse] = {
+  def getResponse(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     http.GET[HttpResponse](serviceUrl) map {
       response ⇒
         response.status match {

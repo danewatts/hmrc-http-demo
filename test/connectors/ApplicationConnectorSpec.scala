@@ -29,12 +29,13 @@ import scala.concurrent.{Await, Future}
 
 class ApplicationConnectorSpec extends WordSpec with MustMatchers with MockitoSugar with ScalaFutures {
 
+  implicit val hc: HeaderCarrier = HeaderCarrier()
 
   ".getResponse" should {
     "return full response" when {
       "response status is OK" in {
         val http: WSHttp = mock[WSHttp]
-        val connector: ApplicationConnectorImpl = new ApplicationConnectorImpl(http)
+        val connector: ApplicationConnector = new ApplicationConnector(http)
         val response: HttpResponse = HttpResponse(200, None, Map(),Some("""{"response": true}"""))
         when(http.GET[HttpResponse](any())(any(), any(), any())) thenReturn Future.successful(response)
 
@@ -47,7 +48,7 @@ class ApplicationConnectorSpec extends WordSpec with MustMatchers with MockitoSu
     "throw HttpException" when {
       "response status is 204" in {
         val http: WSHttp = mock[WSHttp]
-        val connector: ApplicationConnectorImpl = new ApplicationConnectorImpl(http)
+        val connector: ApplicationConnector = new ApplicationConnector(http)
         val response: HttpResponse = HttpResponse(204, None, Map(),None)
         when(http.GET[HttpResponse](any())(any(), any(), any())) thenReturn Future.successful(response)
 
@@ -58,7 +59,7 @@ class ApplicationConnectorSpec extends WordSpec with MustMatchers with MockitoSu
 
       "response status is 404" in {
         val http: WSHttp = mock[WSHttp]
-        val connector: ApplicationConnectorImpl = new ApplicationConnectorImpl(http)
+        val connector: ApplicationConnector = new ApplicationConnector(http)
         val response: HttpResponse = HttpResponse(404, None, Map(),None)
         when(http.GET[HttpResponse](any())(any(), any(), any())) thenReturn Future.successful(response)
 
@@ -67,7 +68,7 @@ class ApplicationConnectorSpec extends WordSpec with MustMatchers with MockitoSu
 
       "response status is 500" in {
         val http: WSHttp = mock[WSHttp]
-        val connector: ApplicationConnectorImpl = new ApplicationConnectorImpl(http)
+        val connector: ApplicationConnector = new ApplicationConnector(http)
         val response: HttpResponse = HttpResponse(500, None, Map(),None)
         when(http.GET[HttpResponse](any())(any(), any(), any())) thenReturn Future.successful(response)
 
