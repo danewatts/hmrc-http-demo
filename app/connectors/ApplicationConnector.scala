@@ -27,7 +27,7 @@ import scala.concurrent.Future
 @Singleton
 class ApplicationConnector @Inject()(http: WSHttp) {
   private val serviceUrl = "http://localhost:9000/example-frontend/value"
-  protected[connectors] val defaultNotFoundResponse: HttpResponse = HttpResponse(200, None, Map(), Some("""{"response": false"""))
+  protected[connectors] val defaultNotFoundResponse: HttpResponse = HttpResponse(200, None, Map(), Some("""{"response": false}"""))
 
   def getResponse(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     http.GET[HttpResponse](serviceUrl) map {
