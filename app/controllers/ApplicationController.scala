@@ -33,6 +33,7 @@ class ApplicationController @Inject()(connector: ApplicationConnector) extends F
 
   def result: Action[AnyContent] = Action.async {
     implicit request ⇒
+
       connector.getResponse.map(x ⇒ Ok(Json.toJson(x.body))) recover {
         case e: Throwable ⇒ InternalServerError(e.toString)
       }
