@@ -47,5 +47,4 @@ class FrontendAppConfig @Inject() (override val runModeConfiguration: Configurat
   def languageMap: Map[String, Lang] = Map(
     "english" -> Lang("en"),
     "cymraeg" -> Lang("cy"))
-  def routeToSwitchLanguage = (lang: String) => routes.LanguageSwitchController.switchToLanguage(lang)
 }
