@@ -18,6 +18,7 @@ package connectors
 
 import config.WSHttp
 import javax.inject.{Inject, Singleton}
+import play.api.Configuration
 import play.api.http.Status._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
@@ -25,12 +26,18 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 @Singleton
-class ApplicationConnector @Inject()(http: WSHttp) {
-  private val serviceUrl = "http://localhost:9000/example-frontend/value"
+class ApplicationConnector @Inject()(
+                                      http: WSHttp,
+                                      config: Configuration
+                                    ) {
+
+  val port: Int = config.underlying.getInt("connector.port")
+  private val host = s"http://localhost:$port"
+  private[connectors] val url = "/example-frontend/value"
   protected[connectors] val defaultNotFoundResponse: HttpResponse = HttpResponse(200, None, Map(), Some("""{"response": false}"""))
 
   def getResponse(implicit hc: HeaderCarrier): Future[HttpResponse] = {
-    http.GET[HttpResponse](serviceUrl) map {
+    http.GET[HttpResponse](host + url) map {
       response ⇒
         response.status match {
         case OK ⇒

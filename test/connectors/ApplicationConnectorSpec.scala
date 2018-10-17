@@ -19,15 +19,18 @@ package connectors
 import config.WSHttp
 import org.mockito.Matchers._
 import org.mockito.Mockito._
-import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{MustMatchers, WordSpec}
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api.Configuration
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import utils.WireMockHelper
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 
-class ApplicationConnectorSpec extends WordSpec with MustMatchers with MockitoSugar with ScalaFutures {
+class ApplicationConnectorSpec extends WordSpec with MustMatchers with MockitoSugar with ScalaFutures with IntegrationPatience with GuiceOneAppPerSuite with WireMockHelper {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
@@ -35,7 +38,7 @@ class ApplicationConnectorSpec extends WordSpec with MustMatchers with MockitoSu
     "return full response" when {
       "response status is OK" in {
         val http: WSHttp = mock[WSHttp]
-        val connector: ApplicationConnector = new ApplicationConnector(http)
+        val connector: ApplicationConnector = new ApplicationConnector(http, app.injector.instanceOf[Configuration])
         val response: HttpResponse = HttpResponse(200, None, Map(),Some("""{"response": true}"""))
         when(http.GET[HttpResponse](any())(any(), any(), any())) thenReturn Future.successful(response)
 
@@ -48,7 +51,7 @@ class ApplicationConnectorSpec extends WordSpec with MustMatchers with MockitoSu
     "throw HttpException" when {
       "response status is 204" in {
         val http: WSHttp = mock[WSHttp]
-        val connector: ApplicationConnector = new ApplicationConnector(http)
+        val connector: ApplicationConnector = new ApplicationConnector(http, app.injector.instanceOf[Configuration])
         val response: HttpResponse = HttpResponse(204, None, Map(),None)
         when(http.GET[HttpResponse](any())(any(), any(), any())) thenReturn Future.successful(response)
 
@@ -59,7 +62,7 @@ class ApplicationConnectorSpec extends WordSpec with MustMatchers with MockitoSu
 
       "response status is 404" in {
         val http: WSHttp = mock[WSHttp]
-        val connector: ApplicationConnector = new ApplicationConnector(http)
+        val connector: ApplicationConnector = new ApplicationConnector(http, app.injector.instanceOf[Configuration])
         val response: HttpResponse = HttpResponse(404, None, Map(),None)
         when(http.GET[HttpResponse](any())(any(), any(), any())) thenReturn Future.successful(response)
 
@@ -68,7 +71,7 @@ class ApplicationConnectorSpec extends WordSpec with MustMatchers with MockitoSu
 
       "response status is 500" in {
         val http: WSHttp = mock[WSHttp]
-        val connector: ApplicationConnector = new ApplicationConnector(http)
+        val connector: ApplicationConnector = new ApplicationConnector(http, app.injector.instanceOf[Configuration])
         val response: HttpResponse = HttpResponse(500, None, Map(),None)
         when(http.GET[HttpResponse](any())(any(), any(), any())) thenReturn Future.successful(response)
 
