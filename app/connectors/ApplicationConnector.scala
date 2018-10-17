@@ -17,13 +17,38 @@
 package connectors
 
 import config.WSHttp
+import connectors.MyResponse.{Failure, Success}
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import play.api.http.Status._
+import play.api.libs.json.{Json, Reads}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, _}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+
+sealed trait MyResponse
+
+object MyResponse {
+
+  final case class Success(response: Boolean) extends MyResponse
+  final case class Failure(reason: String) extends MyResponse
+
+  implicit lazy val httpReads: HttpReads[MyResponse] =
+    new HttpReads[MyResponse] {
+      override def read(method: String, url: String, response: HttpResponse): MyResponse =
+        response.status match {
+          case OK ⇒
+            response.json.as[Success]
+          case NOT_FOUND ⇒
+            Failure(response.body)
+          case status ⇒
+            throw new ApplicationHttpException(s"Failed with status $status")
+        }
+    }
+  implicit val successReads: Reads[Success] = Json.reads[Success]
+
+}
 
 @Singleton
 class ApplicationConnector @Inject()(
@@ -34,26 +59,9 @@ class ApplicationConnector @Inject()(
   val port: Int = config.underlying.getInt("connector.port")
   private val host = s"http://localhost:$port"
   private[connectors] val url = "/example-frontend/value"
-  protected[connectors] val defaultNotFoundResponse: HttpResponse = HttpResponse(200, None, Map(), Some("""{"response": false}"""))
 
-  private implicit val httpReads: HttpReads[HttpResponse] = new HttpReads[HttpResponse] {
-    def read(method: String, url: String, response: HttpResponse): HttpResponse = {
-      response
-    }
-  }
-
-  def getResponse(implicit hc: HeaderCarrier): Future[HttpResponse] = {
-    http.GET[HttpResponse](host + url) map {
-      response ⇒
-        response.status match {
-        case OK ⇒
-          response
-        case NOT_FOUND ⇒
-          defaultNotFoundResponse
-        case _ ⇒
-          throw new ApplicationHttpException("Failed")
-      }
-    }
+  def getResponse(implicit hc: HeaderCarrier): Future[MyResponse] = {
+    http.GET[MyResponse](host + url)
   }
 }
 

@@ -27,8 +27,9 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.{Application, Configuration}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import utils.WireMockHelper
-
 import com.github.tomakehurst.wiremock.client.WireMock._
+import connectors.MyResponse.{Failure, Success}
+
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 
@@ -47,12 +48,8 @@ class ApplicationConnectorSpec extends WordSpec with MustMatchers with MockitoSu
               .withStatus(200)
               .withBody("""{"response": true}""")))
 
-        val response: HttpResponse = HttpResponse(200, None, Map(),Some("""{"response": true}"""))
-
         whenReady(connector.getResponse) {
-          resp ⇒
-            resp.status mustBe 200
-            resp.body mustBe response.body
+          _ mustBe Success(true)
         }
 
       }
@@ -71,12 +68,14 @@ class ApplicationConnectorSpec extends WordSpec with MustMatchers with MockitoSu
       }
 
       "response status is 404" in {
+        val body = "abc"
         server.stubFor(get(urlPathEqualTo(connector.url))
           .willReturn(
             aResponse()
-              .withStatus(404)))
+              .withStatus(404)
+              .withBody(body)))
 
-        Await.result(connector.getResponse, Duration.Inf) mustBe connector.defaultNotFoundResponse
+        Await.result(connector.getResponse, Duration.Inf) mustBe Failure(body)
       }
 
       "response status is 500" in {
