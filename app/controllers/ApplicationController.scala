@@ -26,9 +26,9 @@ class ApplicationController @Inject()(connector: ApplicationConnector) extends F
 
   def value = Action {
     implicit request ⇒
-      InternalServerError(Json.toJson("""{"response": true}"""))
-      //NotFound(Json.toJson("""{"response": true}"""))
-      //Ok(Json.toJson("""{"response": true}"""))
+      InternalServerError(Json.obj("response" → true))
+      //NotFound(Json.obj("response" → true))
+      //Ok(Json.obj("response" → true))
   }
 
   def result: Action[AnyContent] = Action.async {
